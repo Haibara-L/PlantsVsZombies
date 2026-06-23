@@ -1,4 +1,4 @@
-__author__ = 'marble_xu'
+__author__ = 'yuanyu'
 
 import random
 import pygame as pg
@@ -435,18 +435,32 @@ class Chomper(Plant):
         self.changeFrames(self.digest_frames)
 
     def attacking(self):
+        # 1. 到了吞噬帧（倒数第3帧），安全地移除僵尸，防止找不到对象而闪退
         if self.frame_index == (self.frame_num - 3):
-            self.zombie_group.remove(self.attack_zombie)
+            if self.attack_zombie and hasattr(self, 'zombie_group'):
+                try:
+                    if self.attack_zombie in self.zombie_group:
+                        self.zombie_group.remove(self.attack_zombie)
+                except (ValueError, AttributeError):
+                    pass # 如果僵尸已经被网络同步删了，或者传入的是空列表，直接忽略
+
+        # 2. 吞噬动画播放完毕，正常切入消化状态
         if (self.frame_index + 1) == self.frame_num:
             self.setDigest()
-
+    
     def digest(self):
-        if self.digest_timer == 0:
-            self.digest_timer = self.current_time
-        elif (self.current_time - self.digest_timer) > self.digest_interval:
-            self.digest_timer = 0
-            self.attack_zombie.kill()
-            self.setIdle()
+        # 吞噬/咀嚼动画播到最后一帧时
+        if (self.frame_index + 1) == self.frame_num:
+            if hasattr(self, 'attack_zombie') and self.attack_zombie is not None:
+                try:
+                    self.attack_zombie.kill()
+                except Exception:
+                    pass
+            self.attack_zombie = None
+            
+            # ⚡【核心修改】不要在本地执行 self.setIdle()！
+            # 让它的动画帧卡在最后一帧，或者让它循环播放咀嚼动画
+            self.frame_index = 0  # 如果你想让它持续保持咀嚼动作，就让它循环播
 
 class PuffShroom(Plant):
     def __init__(self, x, y, bullet_group):

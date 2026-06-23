@@ -1,6 +1,6 @@
-__author__ = 'marble_xu'
+__author__ = 'oneTimePass'
 
-START_LEVEL_NUM = 1
+START_LEVEL_NUM = 4
 
 ORIGINAL_CAPTION = 'Plant VS Zombies Game'
 
@@ -178,3 +178,40 @@ PLAY = 'play'
 #BACKGROUND
 BACKGROUND_DAY = 0
 BACKGROUND_NIGHT = 1
+
+#MULTIPLAYER
+MULTIPLAYER_LEVEL = 'multiplayer level'
+LOBBY = 'lobby'
+
+# 网络配置
+DEFAULT_SERVER_HOST = '127.0.0.1'
+DEFAULT_SERVER_PORT = 8765
+
+# 僵尸玩家资源
+BRAIN_POINTS_START = 50
+BRAIN_POINTS_MAX = 300
+BRAIN_POINTS_REGEN = 25
+BRAIN_POINTS_INTERVAL = 7000
+
+# 僵尸卡牌消耗和冷却
+ZOMBIE_CARD_CONFIG = {
+    NORMAL_ZOMBIE:    {'brain_cost': 25,  'cooldown': 7500},
+    FLAG_ZOMBIE:      {'brain_cost': 50,  'cooldown': 15000},
+    CONEHEAD_ZOMBIE:  {'brain_cost': 75,  'cooldown': 20000},
+    BUCKETHEAD_ZOMBIE:{'brain_cost': 125, 'cooldown': 30000},
+    NEWSPAPER_ZOMBIE: {'brain_cost': 100, 'cooldown': 25000},
+}
+
+# 游戏时长限制
+MATCH_DURATION = 5 * 60 * 1000  # 5 分钟（毫秒）
+
+# 服务端 Tick 率
+SERVER_TICK_RATE = 20  # 每秒 tick 数
+SERVER_TICK_DURATION = 50  # 毫秒
+
+# 状态同步间隔
+FULL_STATE_SYNC_INTERVAL = 500  # 毫秒
+DELTA_STATE_SYNC_INTERVAL = 50   # 毫秒
+
+# 玩家断线超时
+DISCONNECT_TIMEOUT = 5000  # 毫秒

@@ -1,4 +1,4 @@
-__author__ = 'marble_xu'
+__author__ = 'yuanyu'
 
 import os
 import json
@@ -32,9 +32,10 @@ class Control():
         self.done = False
         self.clock = pg.time.Clock()
         self.fps = 60
+        self.key_events = []  # 存储当前帧的按键
         self.keys = pg.key.get_pressed()
         self.mouse_pos = None
-        self.mouse_click = [False, False]  # value:[left mouse click, right mouse click]
+        self.mouse_click = [False, False]
         self.current_time = 0.0
         self.state_dict = {}
         self.state_name = None
@@ -52,6 +53,10 @@ class Control():
         self.current_time = pg.time.get_ticks()
         if self.state.done:
             self.flip_state()
+        
+        # 核心修复 1：在执行状态更新时，确保将最新拷贝好的按键事件塞给 game_info
+        self.game_info['_key_events'] = list(self.key_events)
+        
         self.state.update(self.screen, self.current_time, self.mouse_pos, self.mouse_click)
         self.mouse_pos = None
         self.mouse_click[0] = False
@@ -69,15 +74,16 @@ class Control():
                 self.done = True
             elif event.type == pg.KEYDOWN:
                 self.keys = pg.key.get_pressed()
+                self.key_events.append(event) # 捕获
             elif event.type == pg.KEYUP:
                 self.keys = pg.key.get_pressed()
             elif event.type == pg.MOUSEBUTTONDOWN:
                 self.mouse_pos = pg.mouse.get_pos()
                 self.mouse_click[0], _, self.mouse_click[1] = pg.mouse.get_pressed()
-                print('pos:', self.mouse_pos, ' mouse:', self.mouse_click)
 
     def main(self):
         while not self.done:
+            self.key_events = [] # 每一帧开头清空旧事件
             self.event_loop()
             self.update()
             pg.display.update()
@@ -87,18 +93,14 @@ class Control():
 def get_image(sheet, x, y, width, height, colorkey=c.BLACK, scale=1):
         image = pg.Surface([width, height])
         rect = image.get_rect()
-
         image.blit(sheet, (0, 0), (x, y, width, height))
         image.set_colorkey(colorkey)
-        image = pg.transform.scale(image,
-                                   (int(rect.width*scale),
-                                    int(rect.height*scale)))
+        image = pg.transform.scale(image, (int(rect.width*scale), int(rect.height*scale)))
         return image
 
 def load_image_frames(directory, image_name, colorkey, accept):
     frame_list = []
     tmp = {}
-    # image_name is "Peashooter", pic name is 'Peashooter_1', get the index 1
     index_start = len(image_name) + 1 
     frame_num = 0;
     for pic in os.listdir(directory):
@@ -113,7 +115,6 @@ def load_image_frames(directory, image_name, colorkey, accept):
                 img.set_colorkey(colorkey)
             tmp[index]= img
             frame_num += 1
-
     for i in range(frame_num):
         frame_list.append(tmp[i])
     return frame_list
@@ -121,27 +122,21 @@ def load_image_frames(directory, image_name, colorkey, accept):
 def load_all_gfx(directory, colorkey=c.WHITE, accept=('.png', '.jpg', '.bmp', '.gif')):
     graphics = {}
     for name1 in os.listdir(directory):
-        # subfolders under the folder resources\graphics
         dir1 = os.path.join(directory, name1)
         if os.path.isdir(dir1):
             for name2 in os.listdir(dir1):
                 dir2 = os.path.join(dir1, name2)
                 if os.path.isdir(dir2):
-                # e.g. subfolders under the folder resources\graphics\Zombies
                     for name3 in os.listdir(dir2):
                         dir3 = os.path.join(dir2, name3)
-                        # e.g. subfolders or pics under the folder resources\graphics\Zombies\ConeheadZombie
                         if os.path.isdir(dir3):
-                            # e.g. it's the folder resources\graphics\Zombies\ConeheadZombie\ConeheadZombieAttack
                             image_name, _ = os.path.splitext(name3)
                             graphics[image_name] = load_image_frames(dir3, image_name, colorkey, accept)
                         else:
-                            # e.g. pics under the folder resources\graphics\Plants\Peashooter
                             image_name, _ = os.path.splitext(name2)
                             graphics[image_name] = load_image_frames(dir2, image_name, colorkey, accept)
                             break
                 else:
-                # e.g. pics under the folder resources\graphics\Screen
                     name, ext = os.path.splitext(name2)
                     if ext.lower() in accept:
                         img = pg.image.load(dir2)
@@ -170,6 +165,9 @@ def loadPlantImageRect():
 pg.init()
 pg.display.set_caption(c.ORIGINAL_CAPTION)
 SCREEN = pg.display.set_mode(c.SCREEN_SIZE)
+
+def get_font(size, bold=False):
+    return pg.font.Font(None, size)
 
 GFX = load_all_gfx(os.path.join("resources","graphics"))
 ZOMBIE_RECT = loadZombieImageRect()

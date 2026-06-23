@@ -1,4 +1,4 @@
-__author__ = 'marble_xu'
+__author__ = 'yuanyu'
 
 import random
 import pygame as pg
