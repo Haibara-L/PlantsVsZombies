@@ -5,6 +5,7 @@ __author__ = 'yuanyu'
 import pygame as pg
 from .. import tool
 from .. import constants as c
+import os
 
 FONT_SIZE = 22
 FONT_SIZE_LARGE = 36
@@ -69,7 +70,7 @@ class Lobby(tool.State):
 
     def _load_background(self):
         try:
-            raw = pg.image.load('resources/graphics/Screen/MainMenu.png')
+            raw = pg.image.load(os.path.join(tool._PROJECT_ROOT, 'resources', 'graphics', 'Screen', 'MainMenu.png'))
             self._bg_image = pg.transform.smoothscale(
                 raw, (c.SCREEN_WIDTH, c.SCREEN_HEIGHT))
         except Exception:

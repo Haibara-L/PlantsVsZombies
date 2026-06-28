@@ -2,7 +2,7 @@ __author__ = 'yuanyu'
 
 from . import tool
 from . import constants as c
-from .state import mainmenu, screen, level, lobby, multiplayer
+from .state import mainmenu, screen, level, lobby, multiplayer, endless
 
 def main():
     game = tool.Control()
@@ -11,6 +11,7 @@ def main():
                   c.GAME_LOSE: screen.GameLoseScreen(),
                   c.LEVEL: level.Level(),
                   c.LOBBY: lobby.Lobby(),
-                  c.MULTIPLAYER_LEVEL: multiplayer.MultiplayerLevel()}
+                  c.MULTIPLAYER_LEVEL: multiplayer.MultiplayerLevel(),
+                  c.ENDLESS: endless.Endless()}
     game.setup_states(state_dict, c.MAIN_MENU)
     game.main()

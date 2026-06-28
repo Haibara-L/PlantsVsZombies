@@ -6,6 +6,8 @@ from abc import abstractmethod
 import pygame as pg
 from . import constants as c
 
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class State():
     def __init__(self):
         self.start_time = 0.0
@@ -53,10 +55,13 @@ class Control():
         self.current_time = pg.time.get_ticks()
         if self.state.done:
             self.flip_state()
-        
+
+        # 无尽模式等子状态可能 resize 了 display，每帧重新获取屏幕表面，避免引用失效
+        self.screen = pg.display.get_surface()
+
         # 核心修复 1：在执行状态更新时，确保将最新拷贝好的按键事件塞给 game_info
         self.game_info['_key_events'] = list(self.key_events)
-        
+
         self.state.update(self.screen, self.current_time, self.mouse_pos, self.mouse_click)
         self.mouse_pos = None
         self.mouse_click[0] = False
@@ -88,6 +93,9 @@ class Control():
             self.update()
             pg.display.update()
             self.clock.tick(self.fps)
+            # 无尽模式子游戏请求关闭整个窗口
+            if _endless_quit_requested:
+                self.done = True
         print('game over')
 
 def get_image(sheet, x, y, width, height, colorkey=c.BLACK, scale=1):
@@ -149,14 +157,14 @@ def load_all_gfx(directory, colorkey=c.WHITE, accept=('.png', '.jpg', '.bmp', '.
     return graphics
 
 def loadZombieImageRect():
-    file_path = os.path.join('source', 'data', 'entity', 'zombie.json')
+    file_path = os.path.join(_PROJECT_ROOT, 'source', 'data', 'entity', 'zombie.json')
     f = open(file_path)
     data = json.load(f)
     f.close()
     return data[c.ZOMBIE_IMAGE_RECT]
 
 def loadPlantImageRect():
-    file_path = os.path.join('source', 'data', 'entity', 'plant.json')
+    file_path = os.path.join(_PROJECT_ROOT, 'source', 'data', 'entity', 'plant.json')
     f = open(file_path)
     data = json.load(f)
     f.close()
@@ -166,9 +174,12 @@ pg.init()
 pg.display.set_caption(c.ORIGINAL_CAPTION)
 SCREEN = pg.display.set_mode(c.SCREEN_SIZE)
 
+# 无尽模式子游戏通过该标志请求关闭整个窗口；由 Control.main 读取
+_endless_quit_requested = False
+
 def get_font(size, bold=False):
     return pg.font.Font(None, size)
 
-GFX = load_all_gfx(os.path.join("resources","graphics"))
+GFX = load_all_gfx(os.path.join(_PROJECT_ROOT, "resources", "graphics"))
 ZOMBIE_RECT = loadZombieImageRect()
 PLANT_RECT = loadPlantImageRect()

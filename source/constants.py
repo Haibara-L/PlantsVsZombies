@@ -36,6 +36,7 @@ LOAD_SCREEN = 'load screen'
 GAME_LOSE = 'game los'
 GAME_VICTORY = 'game victory'
 LEVEL = 'level'
+ENDLESS = 'endless'  # 无尽模式(独立子游戏)
 
 MAIN_MENU_IMAGE = 'MainMenu'
 OPTION_ADVENTURE = 'Adventure'
